@@ -1,5 +1,22 @@
 # AI Security Architecture
 
+```text
+Fixed Guard
+-> single risky request blocking
+
+Dynamic Guard
+-> repeated risky behavior detection
+
+Cost Control
+-> token cost explosion prevention
+
+Privacy Output Guard
+-> personal information masking in output
+
+Observability
+-> reasonCode / Prometheus / Grafana dashboard
+```
+
 ## Core Message
 
 AI service security is not only about blocking bad prompts.
@@ -20,6 +37,21 @@ Privacy Output Guard
 ```
 
 This repository organizes the security architecture that can be applied to Legal AI, Medical AI, and other high-risk AI intake systems.
+
+## Table of Contents
+
+```text
+1. Security Layer Overview
+2. Fixed Guard
+3. Dynamic Metric Guard
+4. Cost Control
+5. Privacy Output Guard
+6. NeMo Guardrails
+7. Prometheus / Grafana Observability
+8. reasonCode
+9. Postman Security Test Scenarios
+10. Mermaid Security Flow
+```
 
 ## Why This Matters
 
@@ -46,42 +78,31 @@ operator visibility
 -> Grafana dashboard / alert
 ```
 
-## Security Layer Overview
+## 1. Security Layer Overview
 
-```mermaid
-flowchart TD
-    A["Client / React"]
-    B["Spring Security<br/>JWT authentication / authorization"]
-    C["Controller<br/>API entry"]
-    D["DTO Validation<br/>required fields / type / length"]
-    E["Service Layer<br/>business flow"]
-    F["Fixed Guard<br/>single risky request blocking"]
-    G["Cost Control<br/>estimated token / request size / budget"]
-    H["Dynamic Guard<br/>session risk score / repeated attack detection"]
-    I["NeMo Input Guardrail<br/>input safety policy"]
-    J["LLM Call"]
-    K["NeMo Output Guardrail<br/>output safety policy"]
-    L["Privacy Output Guard<br/>mask personal information"]
-    M["Response or Fallback"]
-    N["Metric / Trace / Audit<br/>reasonCode / Prometheus / dashboard"]
+The security architecture is divided into four main control layers and one observability layer.
 
-    A --> B
-    B --> C
-    C --> D
-    D --> E
-    E --> F
-    F --> G
-    G --> H
-    H --> I
-    I --> J
-    J --> K
-    K --> L
-    L --> M
-    M --> N
-    N --> A
+```text
+request access control
+-> Spring Security / JWT
+
+single request risk control
+-> Fixed Guard
+
+repeated behavior risk control
+-> Dynamic Metric Guard
+
+cost risk control
+-> Cost Control
+
+privacy output control
+-> Privacy Output Guard
+
+operator visibility
+-> reasonCode / Prometheus / Grafana / audit log
 ```
 
-## 1. Fixed Guard
+## 2. Fixed Guard
 
 Fixed Guard blocks clearly dangerous or invalid requests before the LLM call.
 
@@ -138,12 +159,12 @@ Example requests:
 -> BLOCKED_AUTH_BYPASS
 ```
 
-## 2. Dynamic Guard
+## 3. Dynamic Metric Guard
 
-Dynamic Guard detects repeated risky behavior over time.
+Dynamic Metric Guard detects repeated risky behavior over time.
 
 Fixed Guard blocks a single request.
-Dynamic Guard watches the session pattern.
+Dynamic Metric Guard watches the session pattern through session state, risk score, and observability metrics.
 
 ```text
 single blocked request
@@ -178,12 +199,12 @@ Example flow:
 ```text
 User repeats jailbreak attempts with the same sessionId.
 Fixed Guard blocks each attempt.
-Dynamic Guard accumulates risk score.
+Dynamic Metric Guard accumulates risk score.
 When the threshold is exceeded, the session is blocked.
 Prometheus metric and audit log record the reason.
 ```
 
-## 3. Cost Control
+## 4. Cost Control
 
 Cost Control decides whether the request is allowed before spending LLM tokens.
 
@@ -231,7 +252,7 @@ TOKEN_BUDGET_EXCEEDED
 RATE_LIMITED
 ```
 
-## 4. Privacy Output Guard
+## 5. Privacy Output Guard
 
 For legal and medical intake, personal information input may be necessary.
 The key policy is not to block all personal information input.
@@ -272,7 +293,46 @@ BLOCKED_PRIVACY_RISK
 legal.ai.privacy.output.masked
 ```
 
-## Observability
+## 6. NeMo Guardrails
+
+NeMo Guardrails checks LLM input and output safety.
+
+In this architecture, NeMo is not the only defense layer.
+It works together with Spring Java security controls.
+
+```text
+Fixed Guard
+-> blocks obvious risk before NeMo / LLM
+
+Dynamic Metric Guard
+-> blocks repeated risky behavior based on session state and metrics
+
+Cost Control
+-> blocks expensive requests before LLM calls
+
+NeMo Input Guardrail
+-> checks input safety policy
+
+NeMo Output Guardrail
+-> checks model output safety policy
+
+Privacy Output Guard
+-> masks personal information before final response
+```
+
+For a short Spring Java project, the practical direction is:
+
+```text
+Spring Java RiskEngine
+-> reasonCode / risk score / cost check / privacy masking
+
+NeMo Colang
+-> fixed conversational safety flow
+```
+
+Python actions can be added later when the project expands.
+
+## 7. Prometheus / Grafana Observability
 
 Security control must be observable.
 
@@ -301,7 +361,52 @@ Grafana dashboard
 audit log
 ```
 
-## Postman Security Test Scenarios
+## 8. reasonCode
+
+`reasonCode` explains why the system blocked, masked, limited, or allowed a request.
+
+It is important because security control must be explainable.
+
+```text
+BLOCKED_JAILBREAK
+-> jailbreak or role override attempt
+
+BLOCKED_PROMPT_INJECTION
+-> system prompt / hidden instruction extraction attempt
+
+BLOCKED_LEGAL_HARM
+-> illegal or harmful legal guidance request
+
+BLOCKED_SECRET_REQUEST
+-> API key / token / password request
+
+BLOCKED_AUTH_BYPASS
+-> authentication or electronic signature bypass request
+
+REQUEST_TOO_LONG
+-> input is too long
+
+COST_LIMIT_BLOCKED
+-> estimated token cost exceeds policy
+
+PRIVACY_OUTPUT_MASKED
+-> personal information was masked in the output
+
+DYNAMIC_RISK_BLOCKED
+-> repeated risky behavior exceeded threshold
+```
+
+The same reasonCode should be visible in:
+
+```text
+API response
+audit log
+Prometheus metric label
+Grafana dashboard
+Postman test evidence
+```
+
+## 9. Postman Security Test Scenarios
 
 ```text
 1. Normal legal intake request
@@ -314,6 +419,41 @@ audit log
 8. Cost Control
 9. Dynamic Guard repeated blocking
 10. Prometheus metric check
+```
+
+## 10. Mermaid Security Flow
+
+```mermaid
+flowchart TD
+    A["Client / React"]
+    B["Spring Security<br/>JWT authentication / authorization"]
+    C["Controller<br/>API entry"]
+    D["DTO Validation<br/>required fields / type / length"]
+    E["Service Layer<br/>business flow"]
+    F["Fixed Guard<br/>single risky request blocking"]
+    G["Cost Control<br/>estimated token / request size / budget"]
+    H["Dynamic Metric Guard<br/>session risk score / repeated attack detection"]
+    I["NeMo Input Guardrail<br/>input safety policy"]
+    J["LLM Call"]
+    K["NeMo Output Guardrail<br/>output safety policy"]
+    L["Privacy Output Guard<br/>mask personal information"]
+    M["Response or Fallback"]
+    N["Metric / Trace / Audit<br/>reasonCode / Prometheus / dashboard"]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+    I --> J
+    J --> K
+    K --> L
+    L --> M
+    M --> N
+    N --> A
 ```
 
 ## Korean Version
