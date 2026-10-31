@@ -1,0 +1,56 @@
+flowchart TB
+    subgraph Runtime["AGENT RUNTIME - REPLACEABLE, OPENCLAW AS FIRST CANDIDATE"]
+        direction LR
+        Agent["Agent session<br/>Wants to call a model or a tool"]
+        Plugin["Thin plugin<br/>before_agent_run and before_tool_call"]
+        Agent --> Plugin
+    end
+
+    subgraph Decision["DECISION SERVICE - OUTSIDE THE RUNTIME"]
+        direction TB
+        Contract["Decision contract<br/>Narrow JSON: tenant, agent, tool, stage"]
+        Spring["Spring RiskEngine<br/>JWT scope, Fixed Guard, Dynamic Guard, Cost Control"]
+        Actions["Python actions<br/>Masking, argument validation, budget lookup"]
+        Verdict{"Decision<br/>allow, ask or deny<br/>with reasonCode"}
+        Contract --> Spring --> Actions --> Verdict
+    end
+
+    Plugin -->|"Decision request"| Contract
+
+    Human{"Owner approval<br/>Irreversible actions"}
+    Execute["Tool or model call<br/>Allowlisted tools, container, NeMo rails"]
+    Inspect["Tool-result inspection<br/>Result is data, not instructions"]
+    Privacy["Privacy Output Guard<br/>Mask personal information"]
+    Back["Result returns to the agent"]
+    Deny["Denied<br/>Fail closed, also when the service is unreachable"]
+    Kill["Kill switch<br/>Agent, tenant or global"]
+    Audit["Audit and metrics<br/>reasonCode, Prometheus, Grafana"]
+
+    Verdict -->|"allow"| Execute
+    Verdict -->|"ask"| Human
+    Human -->|"Approved"| Execute
+    Human -.->|"Rejected"| Deny
+    Verdict -.->|"deny"| Deny
+    Execute --> Inspect --> Privacy --> Back
+    Kill -.->|"Overrides"| Verdict
+    Deny -.-> Audit
+    Privacy -.-> Audit
+
+    classDef engineering fill:#18344b,stroke:#5ba7db,stroke-width:2px,color:#e6edf6
+    classDef python fill:#26313d,stroke:#a1afbf,stroke-width:2px,color:#e6edf6
+    classDef java fill:#1f3320,stroke:#8fcf86,stroke-width:2px,color:#e6edf6
+    classDef guard fill:#263c17,stroke:#91cc45,stroke-width:3px,color:#efffdc
+    classDef worker fill:#4b2b22,stroke:#d39a6a,stroke-width:3px,color:#fff0e6
+    classDef control fill:#42351e,stroke:#ddb965,stroke-width:2px,color:#e6edf6
+    classDef result fill:#1a2837,stroke:#78d5ef,stroke-width:2px,color:#e6edf6
+    classDef stop fill:#40282d,stroke:#c58b92,stroke-width:2px,color:#e6edf6
+    class Agent,Plugin,Back engineering
+    class Contract,Verdict,Human control
+    class Spring java
+    class Actions python
+    class Inspect,Privacy guard
+    class Execute worker
+    class Audit result
+    class Deny,Kill stop
+    style Runtime fill:#141f2c,stroke:#455f79,stroke-width:1.5px,color:#c9d8eb
+    style Decision fill:#141f2c,stroke:#455f79,stroke-width:1.5px,color:#c9d8eb

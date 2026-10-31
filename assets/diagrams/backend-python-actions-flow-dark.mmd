@@ -1,0 +1,60 @@
+flowchart TB
+    subgraph Spring["SPRING BOOT CONTROL PLANE - EXISTING"]
+        direction LR
+        JWT["Spring Security<br/>JWT, tenant and agent scope"]
+        Valid["Controller and<br/>DTO validation"]
+        Fixed["Fixed Guard<br/>Single risky request"]
+        Dynamic["Dynamic Metric Guard<br/>Repeated risky behavior"]
+        Cost["Cost Control<br/>Reserve budget first"]
+        Risk["RiskEngine decision<br/>reasonCode, risk score"]
+        JWT --> Valid --> Fixed --> Dynamic --> Cost --> Risk
+    end
+
+    subgraph Python["PYTHON FASTAPI ACTIONS - NEW"]
+        direction LR
+        Mask["Masking<br/>Before any model or tool"]
+        Args["Tool-argument validation<br/>Allowlist per tool"]
+        Budget["Budget lookup<br/>Tenant, agent and run"]
+        Mask --> Args --> Budget
+    end
+
+    subgraph Nemo["NEMO GUARDRAILS AND MEMORY - EXISTING PLUS MEMVID"]
+        direction LR
+        InRail["Colang input rails<br/>Fixed flows"]
+        Memory["memvid memory<br/>Case-scoped, source-linked"]
+        Model["Model call"]
+        OutRail["Colang output rails"]
+        InRail --> Memory --> Model --> OutRail
+    end
+
+    subgraph Finish["OUTPUT AND ACCOUNTING"]
+        direction LR
+        Inspect["Tool-result inspection<br/>Python action, NEW"]
+        Privacy["Privacy Output Guard<br/>Mask personal information"]
+        Settle["Settle cost ledger<br/>Release on failure or cancel"]
+        Audit["Audit and observability<br/>reasonCode, Prometheus, Grafana"]
+        Inspect --> Privacy --> Settle --> Audit
+    end
+
+    Risk -->|"Narrow JSON contract, internal token never widened"| Mask
+    Budget -->|"Result and reasonCode"| InRail
+    OutRail --> Inspect
+
+    classDef architecture fill:#342a4c,stroke:#b39ae5,stroke-width:2px,color:#e6edf6
+    classDef python fill:#26313d,stroke:#a1afbf,stroke-width:2px,color:#e6edf6
+    classDef java fill:#1f3320,stroke:#8fcf86,stroke-width:2px,color:#e6edf6
+    classDef guard fill:#263c17,stroke:#91cc45,stroke-width:3px,color:#efffdc
+    classDef worker fill:#4b2b22,stroke:#d39a6a,stroke-width:3px,color:#fff0e6
+    classDef control fill:#42351e,stroke:#ddb965,stroke-width:2px,color:#e6edf6
+    classDef result fill:#1a2837,stroke:#78d5ef,stroke-width:2px,color:#e6edf6
+    class JWT,Valid,Fixed,Dynamic,Cost,Risk java
+    class Mask,Args,Budget,Inspect python
+    class InRail,OutRail,Privacy guard
+    class Memory architecture
+    class Model worker
+    class Settle control
+    class Audit result
+    style Spring fill:#141f2c,stroke:#455f79,stroke-width:1.5px,color:#c9d8eb
+    style Python fill:#141f2c,stroke:#455f79,stroke-width:1.5px,color:#c9d8eb
+    style Nemo fill:#141f2c,stroke:#455f79,stroke-width:1.5px,color:#c9d8eb
+    style Finish fill:#141f2c,stroke:#455f79,stroke-width:1.5px,color:#c9d8eb
