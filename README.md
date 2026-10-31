@@ -1,5 +1,28 @@
 # AI Security Architecture
 
+## Next Step: Python Actions, an Agent Runtime and Multi-Agent Operation
+
+**Full design notes: [docs/EXTENSION_DESIGN_NOTES.md](docs/EXTENSION_DESIGN_NOTES.md)** (planned design, not yet implemented or tested)
+
+Core points:
+
+- **The guard stays outside the agent runtime** and is reached through one narrow, runtime-agnostic JSON decision contract (`allow`, `ask` or `deny`, plus a reasonCode). If the decision service is unreachable, the call is denied.
+- **Python actions** add small, testable checks: masking, tool-argument validation, budget lookup and inspection of tool results.
+- **An agent runtime (OpenClaw is the first candidate)** connects through its plugin hooks and stays replaceable. Skills are treated as untrusted code: read, pinned and approved one by one.
+- **Multi-agent controls:** per-agent identity and budgets, loop and delegation limits, a kill switch, human approval for irreversible actions, and no single agent that combines private data, untrusted content and external sending.
+- **Where to go deepest:** least privilege, then evaluation and regression tests, then operating safeguards, memory hygiene and tracing. In the Spring and Python hybrid: authorization propagation and the data lifecycle.
+- **Verification order:** shadow mode, then a small proof of concept with fake data in a separate environment, then automated regression tests. A control is called working only after a test or measurement shows it.
+
+### Flow: agent runtime to guard
+
+[![Agent runtime calls the decision service before every model or tool call](assets/diagrams/agent-runtime-guard-flow-dark.png)](assets/diagrams/agent-runtime-guard-flow-dark.svg)
+
+### Backend structure with Python actions
+
+[![Spring control plane, Python actions, NeMo guardrails with memvid memory, output and accounting](assets/diagrams/backend-python-actions-flow-dark.png)](assets/diagrams/backend-python-actions-flow-dark.svg)
+
+---
+
 ```text
 Fixed Guard
 -> single risky request blocking
