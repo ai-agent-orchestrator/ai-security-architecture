@@ -29,6 +29,14 @@ Core points:
 - Each attack category is tested at the layer that should stop it: Spring Security for SQLi/SSRF/JWT, Fixed Guard, Dynamic Metric Guard for multi-turn attacks, NeMo output rail with a canary token for system prompt leaks.
 - CI reports block rate per layer together with the false-positive rate on hard benign requests, and blocks the merge when a previously blocked attack gets through.
 
+## Next Step: OpenClaw Study Notes and Legal/Medical Controls
+
+**Notes: [docs/OPENCLAW_STUDY_NOTES.md](docs/OPENCLAW_STUDY_NOTES.md)** (study notes and planned design)
+
+- A short reading list for OpenClaw security and hooks.
+- Key finding: one OpenClaw gateway is one trust boundary, not tenant isolation, so clients and patients reach only the Spring service.
+- Legal/medical additions: masking transcripts at rest, a tool-less reader agent for uploaded documents, human approval for irreversible actions, hardened baseline with audit in CI, and hook decisions mapped to reasonCodes.
+
 ---
 
 ```text
