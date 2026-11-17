@@ -21,6 +21,14 @@ Core points:
 
 [![Spring control plane, Python actions, NeMo guardrails with memvid memory, output and accounting](assets/diagrams/backend-python-actions-flow-dark.png)](assets/diagrams/backend-python-actions-flow-dark.svg)
 
+## Next Step: Red-Team Regression Evaluation
+
+**Design: [docs/REDTEAM_REGRESSION_DESIGN.md](docs/REDTEAM_REGRESSION_DESIGN.md)** (planned design, not yet implemented or measured)
+
+- Attack payloads from [PayloadsAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings) (MIT, pinned commit, license notice kept) become a red-team dataset, with Korean and encoding variants.
+- Each attack category is tested at the layer that should stop it: Spring Security for SQLi/SSRF/JWT, Fixed Guard, Dynamic Metric Guard for multi-turn attacks, NeMo output rail with a canary token for system prompt leaks.
+- CI reports block rate per layer together with the false-positive rate on hard benign requests, and blocks the merge when a previously blocked attack gets through.
+
 ---
 
 ```text
