@@ -13,6 +13,10 @@ Core points:
 - **Where to go deepest:** least privilege, then evaluation and regression tests, then operating safeguards, memory hygiene and tracing. In the Spring and Python hybrid: authorization propagation and the data lifecycle.
 - **Verification order:** shadow mode, then a small proof of concept with fake data in a separate environment, then automated regression tests. A control is called working only after a test or measurement shows it.
 
+### Implemented: nine Python security actions
+
+**Code: [python-security-actions/](python-security-actions/)**, copied from `legal-intake-fastapi-lab` @ `4fc98d5` with its standalone tests (121 passed locally without NeMo). Context check, session risk, input policy, personal-data masking, generation admission, budget reservation, output policy, marketing wording review and risk-event recording.
+
 ### Flow: agent runtime to guard
 
 [![Agent runtime calls the decision service before every model or tool call](assets/diagrams/agent-runtime-guard-flow-dark.png)](assets/diagrams/agent-runtime-guard-flow-dark.svg)
