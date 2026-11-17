@@ -66,7 +66,7 @@ Python actions live behind the decision service (Spring RiskEngine calls them ov
 
 ## 5. Agent runtime integration (OpenClaw as first candidate)
 
-The OpenClaw plugin documentation describes typed plugin hooks, including `before_agent_run` (gate model input and return a block with a reason) and `before_tool_call` (block, rewrite parameters or require approval). The plan is a thin plugin that calls the decision contract at those two points and returns the decision unchanged.
+The OpenClaw plugin documentation describes typed plugin hooks, including `before_agent_run` (gate model input and return a block with a reason) and `before_tool_call` (block, rewrite parameters or require approval). The plan is a thin plugin that calls the decision contract at those two points and returns the decision unchanged. Reading list, trust-model findings and legal/medical controls: [OPENCLAW_STUDY_NOTES.md](OPENCLAW_STUDY_NOTES.md).
 
 Operating rules for the runtime:
 
