@@ -1,0 +1,17 @@
+[project]
+name = "python-security-actions"
+version = "0.1.0"
+description = "Nine Python security actions for legal intake (copied from legal-intake-fastapi-lab @ 4fc98d5)"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+nemo = ["nemoguardrails==0.24.1"]
+
+[dependency-groups]
+dev = ["pytest"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = ["nemo: real NeMo rail tests; run with nemoguardrails installed on Python 3.12/3.13"]
